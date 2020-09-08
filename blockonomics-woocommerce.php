@@ -3,13 +3,13 @@
  * Plugin Name: Wordpress Bitcoin Payments - Blockonomics
  * Plugin URI: https://github.com/blockonomics/woocommerce-plugin
  * Description: Accept Bitcoin Payments on your WooCommerce-powered website with Blockonomics
- * Version: 1.7.8
+ * Version: 1.9
  * Author: Blockonomics
  * Author URI: https://www.blockonomics.co
  * License: MIT
  * Text Domain: blockonomics-bitcoin-payments
  * Domain Path: /languages/
- * WC tested up to: 3.9.0
+ * WC tested up to: 3.9.2
  */
 
 /*  Copyright 2017 Blockonomics Inc.
@@ -56,6 +56,7 @@ function blockonomics_woocommerce_init()
 
     add_action('admin_menu', 'add_page');
     add_action('init', 'woocommerce_handle_blockonomics_return');
+    add_action('init', 'load_plugin_translations');
     add_action('woocommerce_order_details_after_order_table', 'nolo_custom_field_display_cust_order_meta', 10, 1);
     add_action('woocommerce_email_customer_details', 'nolo_bnomics_woocommerce_email_customer_details', 10, 1);
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_blockonomics_gateway');
@@ -68,6 +69,11 @@ function blockonomics_woocommerce_init()
     {
         $methods[] = 'WC_Gateway_Blockonomics';
         return $methods;
+    }
+
+    function load_plugin_translations()
+    {
+        load_plugin_textdomain('blockonomics-bitcoin-payments', false, dirname(plugin_basename(__FILE__)) . '/languages/');
     }
 
     function woocommerce_handle_blockonomics_return()
@@ -181,7 +187,6 @@ function blockonomics_woocommerce_init()
 
     function show_options()
     {
-        load_plugin_textdomain('blockonomics-bitcoin-payments', false, dirname(plugin_basename(__FILE__)) . '/languages/');
         ?>
 
         <script type="text/javascript">
@@ -229,8 +234,8 @@ function blockonomics_woocommerce_init()
                         <td><?php echo get_callback_url(); ?></td>
                     </tr>
                     <tr valign="top">
-                        <th scope="row"><?php echo __('Accept Altcoin Payments (Using Flyp.me)', 'blockonomics-bitcoin-payments')?></th>
-                        <td><input type="checkbox" name="blockonomics_altcoins" value="1" <?php checked("1", get_option('blockonomics_altcoins')); ?>" /></td>
+                        <th scope="row"><?php echo __('BCH Enabled (Select if you want to accept Bitcoin Cash)')?></th>
+                        <td><input type="checkbox" name="blockonomics_bch" value="1" <?php checked("1", get_option('blockonomics_bch')); ?>" /></td>
                     </tr>
                     <tr valign="top">
                         <th scope="row">Destination BTC wallet for payments</th>
@@ -300,6 +305,10 @@ function blockonomics_woocommerce_init()
                             <th scope="row"><?php echo __('Display Payment Page in Lite Mode (Enable this if you are having problems in rendering checkout page)', 'blockonomics-bitcoin-payments')?></th>
                             <td><input type="checkbox" name="blockonomics_lite" value="1" <?php checked("1", get_option('blockonomics_lite')); ?> /></td>
                         </tr>
+                        <tr valign="top">
+                            <th scope="row"><?php echo __('No Javascript checkout page (Enable this if you have majority customer that use tor like browser that block javascript)', 'blockonomics-bitcoin-payments')?></th>
+                            <td><input type="checkbox" name="blockonomics_nojs" value="1" <?php checked("1", get_option('blockonomics_nojs')); ?> /></td>
+                        </tr>
 						<tr valign="top">
                             <th scope="row"><?php echo __('Network Confirmations required for payment to complete)', 'blockonomics-bitcoin-payments')?></th>
                             <td><select name="blockonomics_network_confirmation" />
@@ -313,7 +322,7 @@ function blockonomics_woocommerce_init()
                 <p class="submit">
                     <input type="submit" class="button-primary" value="Save"/>
                     <input type="hidden" name="action" value="update" />
-                    <input type="hidden" name="page_options" value="blockonomics_api_key,blockonomics_altcoins,blockonomics_timeperiod,blockonomics_margin,blockonomics_gen_callback,blockonomics_api_updated,blockonomics_underpayment_slack,blockonomics_lite,blockonomics_network_confirmation" />
+                    <input type="hidden" name="page_options" value="blockonomics_api_key,blockonomics_bch,blockonomics_timeperiod,blockonomics_margin,blockonomics_gen_callback,blockonomics_api_updated,blockonomics_underpayment_slack,blockonomics_lite,blockonomics_nojs,blockonomics_network_confirmation" />
                     <input onclick="checkForAPIKeyChange();" class="button-primary" name="test-setup-submit" value="Test Setup" style="max-width:85px;">
                 </p>
             </form>
@@ -338,7 +347,7 @@ function blockonomics_woocommerce_init()
         $address = get_post_meta($order->get_id(), 'blockonomics_address', true);
         include_once plugin_dir_path(__FILE__) . 'php' . DIRECTORY_SEPARATOR . 'Blockonomics.php';
         if ($txid && $address) {
-            echo '<h2>Payment Details</h2><p><strong>'.__('Transaction').':</strong>  <a href =\''. Blockonomics::BASE_URL ."/api/tx?txid=$txid&addr=$address'>".substr($txid, 0, 10). '</a></p><p>Your order will be processed on confirmation of above transaction by the bitcoin network.</p>';
+            echo '<h2>'.__('Payment Details', 'blockonomics-bitcoin-payments').'</h2><p><strong>'.__('Transaction', 'blockonomics-bitcoin-payments').':</strong>  <a href =\''. Blockonomics::BASE_URL ."/api/tx?txid=$txid&addr=$address'>".substr($txid, 0, 10). '</a></p><p>'.__('Your order will be processed on confirmation of above transaction by the bitcoin network.', 'blockonomics-bitcoin-payments').'</p>';
         }
     }
     function nolo_bnomics_woocommerce_email_customer_details($order)
@@ -347,22 +356,18 @@ function blockonomics_woocommerce_init()
         $address = get_post_meta($order->get_id(), 'blockonomics_address', true);
         if ($txid && $address) {
           include_once plugin_dir_path(__FILE__) . 'php' . DIRECTORY_SEPARATOR . 'Blockonomics.php';
-          echo '<h2>Payment Details</h2><p><strong>'.__('Transaction').':</strong>  <a href =\''. Blockonomics::BASE_URL ."/api/tx?txid=$txid&addr=$address'>".substr($txid, 0, 10). '</a></p<p><b>Powered by <a href="https://wordpress.org/plugins/blockonomics-bitcoin-payments/">Blockonomics</a></b> -Easiest way to accept BTC on Wordpress.</p>';
+          echo '<h2>Payment Details</h2><p><strong>'.__('Transaction').':</strong>  <a href =\''. Blockonomics::BASE_URL ."/api/tx?txid=$txid&addr=$address'>".substr($txid, 0, 10). '</a></p>';
         }
     }
 
     function bnomics_enqueue_stylesheets(){
       wp_enqueue_style('bnomics-style', plugin_dir_url(__FILE__) . "css/order.css");
-      wp_enqueue_style( 'bnomics-altcoins', plugin_dir_url(__FILE__) . "css/cryptofont/cryptofont.min.css");
-      wp_enqueue_style( 'bnomics-icons', plugin_dir_url(__FILE__) . "css/icons/icons.css");
     }
 
     function bnomics_enqueue_scripts(){
       wp_enqueue_script( 'angular', plugins_url('js/angular.min.js#deferload', __FILE__) );
       wp_enqueue_script( 'angular-resource', plugins_url('js/angular-resource.min.js#deferload', __FILE__) );
       wp_enqueue_script( 'app', plugins_url('js/app.js#deferload', __FILE__) );
-                        wp_localize_script( 'app', 'ajax_object',
-                            array( 'ajax_url' => admin_url( 'admin-ajax.php' ) ) );
       wp_enqueue_script( 'angular-qrcode', plugins_url('js/angular-qrcode.js#deferload', __FILE__) );
       wp_enqueue_script( 'vendors', plugins_url('js/vendors.min.js#deferload', __FILE__) );
       wp_enqueue_script( 'reconnecting-websocket', plugins_url('js/reconnecting-websocket.min.js#deferload', __FILE__) );
@@ -378,57 +383,13 @@ function blockonomics_woocommerce_init()
         else
         return str_replace( '#deferload', '', $url )."' defer='defer"; 
     }
-
-    //Ajax for user checkouts through Woocommerce
-    add_action( 'wp_ajax_save_uuid', 'bnomics_alt_save_uuid' );
-    add_action( 'wp_ajax_send_email', 'bnomics_alt_refund_email' );
-
-    //Ajax for guest checkouts through Woocommerce
-    add_action( 'wp_ajax_nopriv_save_uuid', 'bnomics_alt_save_uuid' );
-    add_action( 'wp_ajax_nopriv_send_email', 'bnomics_alt_refund_email' );
-
-    function bnomics_alt_save_uuid(){
-        $orders = get_option('blockonomics_orders');
-        $address = $_REQUEST['address'];
-        $uuid = $_REQUEST['uuid'];
-        $order = $orders[$address];
-        $wc_order = new WC_Order($order['order_id']);
-        update_post_meta($wc_order->get_id(), 'flyp_uuid', $uuid);
-        wp_die();
-    }
-
-    function bnomics_alt_refund_email(){
-        $order_id = $_REQUEST['order_id'];
-        $uuid = $_REQUEST['order_uuid'];
-        $order_coin = $_REQUEST['order_coin'];
-        $refund_address = $_REQUEST['refund_address'];
-        $order = new WC_Order($order_id);
-        $billing_email = $order->billing_email;
-        $email = $billing_email;
-        $subject = $order_coin . ' ' . __('Refund', 'blockonomics-bitcoin-payments');
-        $heading = $order_coin . ' ' . __('Refund', 'blockonomics-bitcoin-payments');
-        $message = __("Your refund details have been submitted. The refund will be automatically sent to", 'blockonomics-bitcoin-payments')."<br><b>".$refund_address."</b><br>".__("If you don&#39;t get refunded in a few hours, contact <a href='mailto:support@flyp.me'>support@flyp.me</a> with the following uuid", 'blockonomics-bitcoin-payments').":<br><b>".$uuid."</b>";
-        bnomics_email_woocommerce_style($email, $subject, $heading, $message);
-        wp_die();
-    }
-
-    function bnomics_email_woocommerce_style($email, $subject, $heading, $message) {
-      $mailer = WC()->mailer();
-      $wrapped_message = $mailer->wrap_message($heading, $message);
-      $wc_email = new WC_Email;
-      $html_message = $wc_email->style_inline($wrapped_message);
-      // Send the email using wordpress mail function
-      //wp_mail( $email, $subject, $html_message, HTML_EMAIL_HEADERS );
-      // Send the email using woocommerce mailer send
-      $mailer->send( $email, $subject, $html_message, array('Content-Type: text/html; charset=UTF-8') );
-    }
 }
 
 // After all plugins have been loaded, initialize our payment gateway plugin
 add_action('plugins_loaded', 'blockonomics_woocommerce_init', 0);
 
 register_activation_hook( __FILE__, 'blockonomics_activation_hook' );
-add_action('admin_notices', 'plugin_activation');
+add_action('admin_notices', 'blockonomics_plugin_activation');
 
 function blockonomics_activation_hook() {
     if(!is_plugin_active('woocommerce/woocommerce.php'))
@@ -439,7 +400,7 @@ function blockonomics_activation_hook() {
 }
 
 //Show message when plugin is activated
-function plugin_activation() {
+function blockonomics_plugin_activation() {
   if(!is_plugin_active('woocommerce/woocommerce.php'))
   {
       $html = '<div class="error">';
@@ -460,30 +421,6 @@ function plugin_activation() {
     echo $html;        
     delete_transient( 'fx-admin-notice-example' );
   }
-  if ( isset( $_GET['review_later'] ) ){
-    update_option('blockonomics_review_notice_dismissed_timestamp', time());
-  } 
-  if ( isset( $_GET['already_reviewed'] ) ){
-    update_option('blockonomics_review_notice_dismissed_timestamp', 1);
-  } 
-  $admin_page = get_current_screen();
-  if (in_array($admin_page->base, array('dashboard', 'settings_page_blockonomics_options', 'plugins'))){
-    //Show review notice only on three pages
-    $blockonomics_orders = get_option('blockonomics_orders', array());
-    if (count($blockonomics_orders)>10){
-      $dismiss_timestamp = get_option('blockonomics_review_notice_dismissed_timestamp', 0);
-      if ($dismiss_timestamp!=1 && time()-$dismiss_timestamp>1209600){
-        //Prompt user to review the plugin after every 2 weeks 
-        //if he has more than 10 orders, until he clicks on I already reviewed
-        $class = 'notice notice-info';
-        $message = __( 'Hey, I noticed you have been using blockonomics for accepting bitcoins - Awesome!</br> Could you please do me a BIG favor and rate it in on Wordpress?', 'blockonomics-bitcoin-payments' );
-        $m1 = __('Ok, I will review it', 'blockonomics-bitcoin-payments');
-        $m2=  __('I already did', 'blockonomics-bitcoin-payments');
-        $m3=  __('Maybe Later', 'blockonomics-bitcoin-payments');
-        printf( '<div class="%1$s"><h4>%2$s</h4><ul><li><a target="_blank" href="https://wordpress.org/support/plugin/blockonomics-bitcoin-payments/reviews/#new-post">%3$s</a></li><li><a href="?already_reviewed">%4$s</a></li><li><a href="?review_later">%5$s</a></li></ul></div>', esc_attr( $class ),  $message, $m1, $m2, $m3); 
-      }
-    }
-  }
 }
 
 // On uninstallation, clear every option the plugin has set
@@ -494,21 +431,21 @@ function blockonomics_uninstall_hook() {
     delete_option('blockonomics_temp_api_key');
     delete_option('blockonomics_temp_withdraw_amount');
     delete_option('blockonomics_orders');
-    delete_option('blockonomics_review_notice_dismissed_timestamp');
     delete_option('blockonomics_margin');
     delete_option('blockonomics_timeperiod');
     delete_option('blockonomics_api_updated');
-    delete_option('blockonomics_altcoins');
+    delete_option('blockonomics_bch');
     delete_option('blockonomics_underpayment_slack');
     delete_option('blockonomics_lite');
+    delete_option('blockonomics_nojs');
 	delete_option('blockonomics_network_confirmation');
 }
 
 
-function plugin_add_settings_link( $links ) {
+function blockonomics_plugin_add_settings_link( $links ) {
     $settings_link = '<a href="options-general.php?page=blockonomics_options">' . __( 'Settings' ) . '</a>';
     array_unshift( $links, $settings_link );
     return $links;
 }
 $plugin = plugin_basename( __FILE__ );
-add_filter( "plugin_action_links_$plugin", 'plugin_add_settings_link' );
+add_filter( "plugin_action_links_$plugin", 'blockonomics_plugin_add_settings_link' );

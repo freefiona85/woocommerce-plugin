@@ -2,8 +2,8 @@
 **Contributors:** juhasiivikko, darrenwestwood, blockonomics
 **Tags:** bitcoin, accept bitcoin, bitcoin woocommerce, bitcoin wordpress plugin, bitcoin payments 
 **Requires at least:** 3.0.1 
-**Tested up to:** 5.2
-**Stable tag:** 1.7.8
+**Tested up to:** 5.4
+**Stable tag:** 1.8.5
 **License:** MIT 
 **License URI:** http://opensource.org/licenses/MIT 
 
@@ -45,14 +45,14 @@ You can operate the plugin in two different modes:
 - To withdraw received funds, user has to change to *Direct to Wallet* mode
 
 ### Direct to Wallet Mode (Recommended)  ### 
-[Video Tutorial](https://youtu.be/Kck3a-9nh6E) | [Blog Tutorial](https://blog.blockonomics.co/how-to-accept-bitcoin-payments-on-woocommerce-using-blockonomics-f18661819a62)  
+[Video Tutorial](https://www.youtube.com/watch?v=uY44SYEdyI0) | [Blog Tutorial](https://blog.blockonomics.co/how-to-accept-bitcoin-payments-on-woocommerce-using-blockonomics-f18661819a62)  
  
 - Click on **Get Started For Free** on [Blockonomics > Merchants](https://www.blockonomics.co/merchants) and proceed to complete merchant wizard. 
 - Your API key should be now shown on the [merchants page](https://www.blockonomics.co/merchants)   
 - In Wordpress Admin > Settings > Blockonomics, paste this API Key and Save Settings 
 - Click on **Test Setup** button to verify installation  
 
-For quick help, ping us on [Telegram Channel](https://t.me/BlockonomicsCo)
+For community support/discussion feel free [to post on our subreddit](https://www.reddit.com/r/blockonomics/)
 
 ## Frequently Asked Questions ## 
 
@@ -61,10 +61,13 @@ Please use Settings > Blockonomics **Test Setup** to diagnose and get more
 details about the issue
 
 ### Order is still on pending payment status even after two confirmations  ### 
-Your webhost is blocking incoming callbacks from bots, our you have a DDOS protection in place that is causing this. Blockonomics server does payment callbacks to update trasnsaction status and cannot emulate a browser accessing your website. Please consult [this article](https://blockonomics.freshdesk.com/solution/articles/33000219539-order-status-not-changing-ddos-protection) on how debug and fix this
+Your webhost is blocking incoming callbacks from bots, our you have a DDOS protection in place that is causing this. Blockonomics server does payment callbacks to update trasnsaction status and cannot emulate a browser accessing your website. Please consult [this article](http://help.blockonomics.co/solution/articles/33000219539-order-status-not-changing-ddos-protection) on how debug and fix this
 
 ### I have multiple websites, how do I set this up? ### 
-You can use single blockonomics account to integrate multiple website. Please consult [this article](https://blockonomics.freshdesk.com/solution/articles/33000209399-merchants-integrating-multiple-websites)
+You can use single blockonomics account to integrate multiple website. Please consult [this article](http://help.blockonomics.co/solution/articles/33000209399-merchants-integrating-multiple-websites)
+
+### Can I remove Powered by Blockonomics text or customize the checkout page ? ### 
+You are free to customize the checkout page according to your needs. Feel free to consult [this article](http://help.blockonomics.co/support/solutions/articles/33000243991-how-to-customize-the-checkout-page-)
 
 ## Screenshots ## 
 

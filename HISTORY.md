@@ -1,5 +1,23 @@
 == Changelog ==
 
+= 1.8.5  =
+* Added option for noJavascript checkout page
+
+= 1.8.3  =
+* Better handling callbacks errors
+
+= 1.8.2  =
+* Removed conflicts with mailchimp plugin
+
+= 1.8.1  =
+* Improved altcoin help text in case payment is not detected
+* Added support for adding custom checkout pages in theme
+
+= 1.8.0  =
+* Added Help text on Payment Page
+* Supporting zero/one blockchain confirmations
+* Reusing same address on order expiry
+
 = 1.7.8  =
 * Improvements to flypme refund flow
 * Minor bug fixes
